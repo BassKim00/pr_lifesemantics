@@ -12,13 +12,14 @@ with open('activity_simple.json','r') as df:
 #class 생성
 
 class Log(object):
-    def __init__(self,_id,name,steps,distance,calories,time):
+    def __init__(self,_id,name,steps,distance,calories,createAt,period):
         self._id = _id
         self.name = name
         self.steps = steps
         self.distance = distance    #kilo 구분 의미있음?
         self.calories = calories
-        self.time = time
+        self.createAt = createAt
+        self.period = period
 
     def __repr__(self):
         return self._id
@@ -44,7 +45,10 @@ class User(object):
 
 log=[]
 for d in data:
-    log.append(Log(d['_id'],d['recordkey'],d['steps'],d['distance'],d['calories'],d['period']))
+    log.append(Log(d['_id'],d['recordkey'],d['steps'],d['distance'],d['calories'],d['createAt'],d['period']))
+
+print("log[0]")
+pprint(log[0].__dict__)
 
 #user 별 class 계산
 
