@@ -13,9 +13,20 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.conf.urls import url, include
 from django.contrib import admin
-from django.urls import path
+from rest_framework import routers
+from rest_framework_swagger.views import get_swagger_view
+
+import member.api
+
+app_name='member'
+
+router = routers.DefaultRouter()
+router.register('members', member.api.MemberViewSet)
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    url(r'^admin/', admin.site.urls),
+    url(r'^api/doc', get_swagger_view(title='Rest API Document')),
+    url(r'^api/v1/', include((router.urls, 'member'), namespace='api')),
 ]
