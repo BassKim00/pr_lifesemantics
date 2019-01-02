@@ -58,15 +58,11 @@ class User(object):
         self.distance = distance
         self.calories = calories
         self.time = time
-
+        self.lastweek = []
+        self.thisweek = []
+        
     def __repr__(self):
-        return self.name
-
-    def week(self):
-        return self.name #1주일 평균 어떻게 구하지
-
-    def month(self):
-        return self.name #1달 평균 어떻게 구하지
+        return self.name 
 
 #entire log 할당
 log=[]
@@ -85,13 +81,13 @@ pprint(log[0].__dict__)
 #할당 후 del해도 될것 같은데? 굳이?
 #할당하기보다는 index를 할당하는게 메모리 절약이 될듯
 lastweek_index=[]
-for l in log:
-    lastweek.append(l)
+for d in log:
+    lastweek_index.append(log.index(d))
 
 #this week log 할당
 thisweek_index=[]
-for l in log=[]:
-    thisweek.append(I)
+for d in log:
+    thisweek_index.append(log.index(d))
 
 #user 별 class 계산
 
