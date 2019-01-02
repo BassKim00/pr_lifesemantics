@@ -9,7 +9,7 @@ import numpy as np
 #json형식을 str로 인식후 json으로 변환
 
 data=[]
-with open('C:/Users/LS-COM-00044/Desktop/jsondata/activity_10000.json','r') as df:
+with open('C:/Users/LS-COM-00044/Desktop/jsondata/activity.json','r') as df:
     for lines in df:
         data.append(json.loads(lines))
 
@@ -67,20 +67,27 @@ pprint(log[0].__dict__)
 
 #thisweek_iso=dt.datetime.now().isocalendar()
 #thisweek 임의 조정
-thisweek_iso=log[1].period.isocalendar()
+thisweek_iso=list(log[1].period.isocalendar())
 
 lastweek_iso=list(thisweek_iso)
 lastweek_iso[1]-=1
-lastweek_iso=tuple(lastweek_iso)
+
 #this week & last week log 할당
 
 thisweek_index=[]
 lastweek_index=[]
 for d in log:
-    if d.period.isocalendar()[:2]==thisweek_iso[:2]:
+    if list(d.period.isocalendar()[:2])==thisweek_iso[:2]:
         thisweek_index.append(log.index(d))
-    elif d.period.isocalendar()[:2]==lastweek_iso[:2]:
+    elif list(d.period.isocalendar()[:2])==lastweek_iso[:2]:
         lastweek_index.append(log.index(d))
 
 #user 별 class 계산
+#for i in thisweek_index:
+user={x.name: [[],[]] for x in log}
 
+for i in thisweek_index:
+    user[log[i].name][0].append(log[i].calories)
+
+for i in lastweek_index:
+    user[log[i].name][1].append(log[i].calories)
