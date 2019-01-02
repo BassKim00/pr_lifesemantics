@@ -41,31 +41,30 @@ class Log(object):
     def __repr__(self):
         return self._id
 
-class User(object):
-    def __init__(self,name,steps,distance,calories,time):
-        self.name = name
-        self.steps = steps
-        self.distance = distance
-        self.calories = calories
-        self.time = time
-
-    def __repr__(self):
-        return self.name
-
-    def week(self):
-        return self.name #1주일 평균 어떻게 구하지
-
-    def month(self):
-        return self.name #1달 평균 어떻게 구하지
-
-#log 할당
-
 log=[]
 for d in data:
     log.append(Log(d['_id'],d['recordkey'],d['steps'],d['distance'],d['calories'],d['createAt'],d['period']))
 
 print("log[0]")
 pprint(log[0].__dict__)
+
+
+#log 제거
+#del log[i]
+
+#last week log 을 유저에 할당
+
+
+#할당 후 del해도 될것 같은데? 굳이?
+#할당하기보다는 index를 할당하는게 메모리 절약이 될듯
+lastweek_index=[]
+for d in log:
+    lastweek_index.append(log.index(d))
+
+#this week log 할당
+thisweek_index=[]
+for d in log:
+    thisweek_index.append(log.index(d))
 
 #user 별 class 계산
 
