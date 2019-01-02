@@ -41,36 +41,13 @@ class Log(object):
     def __repr__(self):
         return self._id
 
-class Type(object):
-    def __init__(self,name,lastweek_avg,thisweek_avg,today):
-        self.name = name
-        self.lastweek_avg = lastweek_avg
-        self.thisweek_avg = thisweek_avg
-        self.today = today
-
-    def __repr__(self):
-        return self.name
-
-class User(object):
-    def __init__(self,name,steps,distance,calories,time):
-        self.name = name
-        self.steps = steps
-        self.distance = distance
-        self.calories = calories
-        self.time = time
-        self.lastweek = []
-        self.thisweek = []
-        
-    def __repr__(self):
-        return self.name 
-
-#entire log 할당
 log=[]
 for d in data:
     log.append(Log(d['_id'],d['recordkey'],d['steps'],d['distance'],d['calories'],d['createAt'],d['period']))
 
 print("log[0]")
 pprint(log[0].__dict__)
+
 
 #log 제거
 #del log[i]
