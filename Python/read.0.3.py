@@ -9,7 +9,7 @@ import numpy as np
 #json형식을 str로 인식후 json으로 변환
 
 data=[]
-with open('C:/Users/LS-COM-00044/Desktop/jsondata/activity.json','r') as df:
+with open('C:/Users/LS-COM-00044/Desktop/jsondata/activity_10000.json','r') as df:
     for lines in df:
         data.append(json.loads(lines))
 
@@ -50,27 +50,36 @@ class Log(object):
         return self._id
 
 log=[]
+#append 형식이라 data 지속적으로 들어와도 처음부터 다 재생성 할 필요 없음. 신규 data 만 입력하면 됨.
 for d in data:
     log.append(Log(d['_id'],d['recordkey'],d['steps'],d['distance'],d['calories'],d['createAt'],d['period']))
 
 print("log[0]")
 pprint(log[0].__dict__)
 
+#json date 인식 by isocalendar()
 
+#thisweek_iso=dt.datetime.now().isocalendar()
+#thisweek 임의 조정
+thisweek_iso=list(dt.datetime.strptime("2018-04-20T06:34:04.000Z", '%Y-%m-%dT%H:%M:%S.%fZ').isocalendar())
+
+print("thisweek = {}".format(thisweek_iso))
+lastweek_iso=list(thisweek_iso)
+lastweek_iso[1]-=1
+
+oldweek_iso=list(thisweek_iso)
+oldweek_iso[1]-=2
+
+print(len(log))
 #log 제거
+for i in log:
+    if list(i.period.isocalendar())<oldweek_iso:
+        del(log[log.index(i)])
+print(len(log))
 #del log[i]
 
 #index를 할당하는게 메모리 절약이 될듯
 #대신 batch로 오래된 데이터 처리하는건 주차별 할당 이전에 해야 함
-#json date 인식 by isocalendar()
-
-
-#thisweek_iso=dt.datetime.now().isocalendar()
-#thisweek 임의 조정
-thisweek_iso=list(log[1].period.isocalendar())
-
-lastweek_iso=list(thisweek_iso)
-lastweek_iso[1]-=1
 
 #this week & last week log 할당
 
@@ -84,10 +93,20 @@ for d in log:
 
 #user 별 class 계산
 #for i in thisweek_index:
-user={x.name: [[],[]] for x in log}
-
-for i in thisweek_index:
-    user[log[i].name][0].append(log[i].calories)
+user={x.name: {'lastweek':[],'thisweek':[]} for x in log}
 
 for i in lastweek_index:
-    user[log[i].name][1].append(log[i].calories)
+    user[log[i].name]['lastweek'].append(log[i].calories)
+
+for i in thisweek_index:
+    user[log[i].name]['thisweek'].append(log[i].calories)
+
+for i in user:
+    if not len(user[i]['thisweek'])==0 and not len(user[i]['lastweek'])==0:
+        print(i,end="")
+        print(user[i])
+
+
+userid=input("put userid:")
+print(userid+" thisweek sum:{:.3f},var:{:.6f}".format(np.mean(user[userid]['thisweek']),np.var(user[userid]['thisweek'])))
+print(userid+" lastweek sum:{:.3f},var:{:.6f}".format(np.mean(user[userid]['lastweek']),np.var(user[userid]['lastweek'])))
