@@ -21,8 +21,11 @@ class DBConnection:
                 passwd=self.password)
         return self.conn
 
-mydb = DBConnection('localhost', 'root', '0000', 'test').get_conn()
+mydb = DBConnection('localhost', 'root', '0000', 'TEMP_TABLE').get_conn()
 mycursor = mydb.cursor(dictionary=True)
+
+print("SET GLOBAL innodb_buffer_pool_size=64G")
+mycursor.execute("SET GLOBAL innodb_buffer_pool_size=68719476736")
 
 illinput = []
 while True:
@@ -47,67 +50,67 @@ for i in illinput:
 EXP_STEP1_where = """ OR
 """.join(EXP_STEP1_like)
 
-EXP_STEP1 = """CREATE TABLE T120_{0} AS
+EXP_STEP1 = """CREATE TABLE ILL.T120_{0} AS
 (
 SELECT T1.*
-FROM T120_AN1000 AS T1
+FROM ILL.T120 AS T1
 WHERE
 {1}
 )
 """.format(illname, EXP_STEP1_where)
 
 
-print("EXP_STEP1-1.CREATE T120_{} ... START".format(illname))
+print("EXP_STEP1-1.CREATE ILL.T120_{} ... START".format(illname))
 
 step_start = time.clock()
 mycursor.execute(EXP_STEP1)
 mydb.commit()
 step_end = time.clock()
-print("EXP_STEP1-1.CREATE T120_{} ... DONE".format(illname))
+print("EXP_STEP1-1.CREATE ILL.T120_{} ... DONE".format(illname))
 print("STEP1-1:{:.6f}s, Total:{:.6f}s\n".format(step_end - step_start,step_end - total_start))
 
-print("EXP_STEP1-2.CREATE INDEX person ON T120_{} ... START".format(illname))
+print("EXP_STEP1-2.CREATE INDEX person ON ILL.T120_{} ... START".format(illname))
 step_start = time.clock()
-mycursor.execute("CREATE INDEX person ON T120_{}(PERSON_ID)".format(illname))
+mycursor.execute("CREATE INDEX person ON ILL.T120_{}(PERSON_ID)".format(illname))
 mydb.commit()
 step_end = time.clock()
-print("EXP_STEP1-2.CREATE INDEX person ON T120_{} ... DONE".format(illname))
+print("EXP_STEP1-2.CREATE INDEX person ON ILL.T120_{} ... DONE".format(illname))
 print("STEP1-2:{:.6f}s, Total:{:.6f}s\n".format(step_end - step_start,step_end - total_start))
 
-EXP_STEP2 = """CREATE TABLE T120_{0}_YEAR AS
+EXP_STEP2 = """CREATE TABLE ILL.T120_{0}_YEAR AS
 (
     SELECT
    	 T1.PERSON_ID, T1.MIN_YEAR, GROUP_CONCAT(DISTINCT(MAIN_SICK) SEPARATOR '/') AS MAIN_SICKS
     FROM
    	 (
     	SELECT PERSON_ID, MIN(YEAR(RECU_FR_DT)) AS MIN_YEAR
-   	 FROM T120_{0}
+   	 FROM ILL.T120_{0}
    	 GROUP BY PERSON_ID
    	 ) AS T1
-    RIGHT JOIN T120_{0} AS T2
+    RIGHT JOIN ILL.T120_{0} AS T2
    	 ON T1.PERSON_ID = T2.PERSON_ID
     WHERE T1.MIN_YEAR = YEAR(T2.RECU_FR_DT)
 	GROUP BY T1.PERSON_ID
 )
 """.format(illname)
 
-print("EXP_STEP2-1.CREATE T120_{}_YEAR ... START".format(illname))
+print("EXP_STEP2-1.CREATE ILL.T120_{}_YEAR ... START".format(illname))
 step_start = time.clock()
 mycursor.execute(EXP_STEP2)
 mydb.commit()
 step_end = time.clock()
-print("EXP_STEP2-1.CREATE T120_{}_YEAR ... DONE".format(illname))
+print("EXP_STEP2-1.CREATE ILL.T120_{}_YEAR ... DONE".format(illname))
 print("STEP2-1:{:.6f}s, Total:{:.6f}s\n".format(step_end - step_start,step_end - total_start))
 
-print("EXP_STEP2-2.CREATE INDEX person ON T120_{}_YEAR ... START".format(illname))
+print("EXP_STEP2-2.CREATE INDEX person ON ILL.T120_{}_YEAR ... START".format(illname))
 step_start = time.clock()
-mycursor.execute("CREATE INDEX person ON T120_{}_YEAR(PERSON_ID,MIN_YEAR)".format(illname))
+mycursor.execute("CREATE INDEX person ON ILL.T120_{}_YEAR(PERSON_ID,MIN_YEAR)".format(illname))
 mydb.commit()
 step_end = time.clock()
-print("EXP_STEP2-2.CREATE INDEX person ON T120_{}_YEAR ... DONE".format(illname))
+print("EXP_STEP2-2.CREATE INDEX person ON ILL.T120_{}_YEAR ... DONE".format(illname))
 print("STEP2-2:{:.6f}s, Total:{:.6f}s\n".format(step_end - step_start,step_end - total_start))
 
-EXP_STEP3 = """CREATE TABLE T120_{0}_YEAR_JK AS (
+EXP_STEP3 = """CREATE TABLE ILL.T120_{0}_YEAR_JK AS (
 	SELECT
    	 T2.`PERSON_ID`,
    	 T2.`MIN_YEAR`,
@@ -119,27 +122,27 @@ EXP_STEP3 = """CREATE TABLE T120_{0}_YEAR_JK AS (
    	 T1.`CTRB_PT_TYPE_CD`,
    	 T1.`DFAB_GRD_CD`,
    	 T1.`DFAB_PTN_CD`
-	FROM JK_UNIF_AN1000 AS T1
-	LEFT JOIN T120_{0}_YEAR AS T2
+	FROM ILL.JK_UNIF AS T1
+	LEFT JOIN ILL.T120_{0}_YEAR AS T2
 	ON T1.PERSON_ID = T2.PERSON_ID
 	WHERE T1.STND_Y = T2.MIN_YEAR AND DTH_YM =""
 )
 """.format(illname)
 
-print("EXP_STEP3-1.CREATE T120_{}_YEAR_JK ... START".format(illname))
+print("EXP_STEP3-1.CREATE ILL.T120_{}_YEAR_JK ... START".format(illname))
 step_start = time.clock()
 mycursor.execute(EXP_STEP3)
 mydb.commit()
 step_end = time.clock()
-print("EXP_STEP3-1.CREATE T120_{}_YEAR_JK ... DONE".format(illname))
+print("EXP_STEP3-1.CREATE ILL.T120_{}_YEAR_JK ... DONE".format(illname))
 print("STEP3-1:{:.6f}s, Total:{:.6f}s\n".format(step_end - step_start,step_end - total_start))
 
-print("EXP_STEP3-2.CREATE INDEX person ON T120_{}_YEAR_JK ... START".format(illname))
+print("EXP_STEP3-2.CREATE INDEX person ON ILL.T120_{}_YEAR_JK ... START".format(illname))
 step_start = time.clock()
-mycursor.execute("CREATE INDEX person ON T120_{}_YEAR_JK(PERSON_ID,MIN_YEAR)".format(illname))
+mycursor.execute("CREATE INDEX person ON ILL.T120_{}_YEAR_JK(PERSON_ID,MIN_YEAR)".format(illname))
 mydb.commit()
 step_end = time.clock()
-print("EXP_STEP3-2.CREATE INDEX person ON T120_{}_YEAR_JK ... DONE".format(illname))
+print("EXP_STEP3-2.CREATE INDEX person ON ILL.T120_{}_YEAR_JK ... DONE".format(illname))
 print("STEP3-2:{:.6f}s, Total:{:.6f}s\n".format(step_end - step_start,step_end - total_start))
 
 EXP_STEP4 = """CREATE TABLE EXP_{0}_{1}_{2}YEAR
@@ -166,8 +169,8 @@ EXP_STEP4 = """CREATE TABLE EXP_{0}_{1}_{2}YEAR
 	T2.`FMLY_HPRTS_PATIEN_YN`,
 	T2.`FMLY_DIABML_PATIEN_YN`,
 	T2.`FMLY_CANCER_PATIEN_YN`
-FROM T120_{0}_YEAR_JK AS T1
-INNER JOIN GJ_UNIF_AN1000 AS T2
+FROM ILL.T120_{0}_YEAR_JK AS T1
+INNER JOIN ILL.GJ_UNIF AS T2
 ON T1.PERSON_ID = T2.PERSON_ID
 WHERE T1.MIN_YEAR = (T2.HCHK_YEAR + 0) AND
 	(T2.`HCHK_APOP_PMH_YN`  	IS NOT NULL AND NOT T2.`HCHK_APOP_PMH_YN`  	="") AND
@@ -223,7 +226,7 @@ for count in range(yearterm2):
         T2.`TM1_DRKQTY_RSPS_CD` AS `{3}Y_TM1_DRKQTY_RSPS_CD`,
         T2.`EXERCI_FREQ_RSPS_CD` AS `{3}Y_EXERCI_FREQ_RSPS_CD`
     FROM EXP_{0}_{1}_{2}YEAR AS T1
-    INNER JOIN GJ_UNIF_AN1000 AS T2
+    INNER JOIN ILL.GJ_UNIF AS T2
     ON T1.PERSON_ID = T2.PERSON_ID
     WHERE T1.`YEAR` = (T2.HCHK_YEAR + 2)    AND
         (T2.`HCHK_YEAR`         	IS NOT NULL AND NOT T2.`HCHK_YEAR`             	="") AND
@@ -279,101 +282,101 @@ for i in illinput:
 CTR_STEP0_sub_where = """ OR
 """.join(CTR_STEP0_sub_like)
 
-CTR_STEP0 = """CREATE TABLE T120_SUB_{0} AS
+CTR_STEP0 = """CREATE TABLE ILL.T120_SUB_{0} AS
 (
 SELECT T1.*
-FROM T120_AN1000 AS T1
+FROM ILL.T120 AS T1
 WHERE
 {1}
 )
 """.format(illname, CTR_STEP0_sub_where)
 
-print("CTR_STEP0-1.CREATE T120_SUB_{} ... START".format(illname))
+print("CTR_STEP0-1.CREATE ILL.T120_SUB_{} ... START".format(illname))
 step_start = time.clock()
 mycursor.execute(CTR_STEP0)
 mydb.commit()
 step_end = time.clock()
-print("CTR_STEP0-1.CREATE T120_SUB_{} ... DONE".format(illname))
+print("CTR_STEP0-1.CREATE ILL.T120_SUB_{} ... DONE".format(illname))
 print("STEP0-1:{:.6f}s, Total:{:.6f}s\n".format(step_end - step_start, step_end - total_start))
 
-print("EXP_STEP0-2.CREATE INDEX person ON T120_SUB_{} ... START".format(illname))
+print("EXP_STEP0-2.CREATE INDEX person ON ILL.T120_SUB_{} ... START".format(illname))
 step_start = time.clock()
-mycursor.execute("CREATE INDEX person ON T120_SUB_{}(PERSON_ID)".format(illname))
+mycursor.execute("CREATE INDEX person ON ILL.T120_SUB_{}(PERSON_ID)".format(illname))
 mydb.commit()
 step_end = time.clock()
-print("EXP_STEP0-2.CREATE INDEX person ON T120_SUB_{} ... DONE".format(illname))
+print("EXP_STEP0-2.CREATE INDEX person ON ILL.T120_SUB_{} ... DONE".format(illname))
 print("STEP0-2:{:.6f}s, Total:{:.6f}s\n".format(step_end - step_start, step_end - total_start))
 
-CTR_STEP1 = """CREATE TABLE T120_NOT_{0}_NOT_SUB_{0} AS
+CTR_STEP1 = """CREATE TABLE ILL.T120_NOT_{0}_NOT_SUB_{0} AS
 (
 	SELECT *
-	FROM T120_AN1000 AS T1
+	FROM ILL.T120 AS T1
 	WHERE
     	(
         	T1.PERSON_ID NOT IN(
             	SELECT PERSON_ID
-            	FROM T120_{0})
+            	FROM ILL.T120_{0})
     	)
     	AND
     	(
         	T1.PERSON_ID NOT IN(
             	SELECT PERSON_ID
-            	FROM T120_SUB_{0})
+            	FROM ILL.T120_SUB_{0})
     	)
 )
 
 """.format(illname)
 
-print("CTR_STEP1-1.CREATE T120_NOT_{0}_NOT_SUB_{0} ... START".format(illname))
+print("CTR_STEP1-1.CREATE ILL.T120_NOT_{0}_NOT_SUB_{0} ... START".format(illname))
 step_start = time.clock()
 mycursor.execute(CTR_STEP1)
 mydb.commit()
 step_end = time.clock()
-print("CTR_STEP1-1.CREATE T120_NOT_{0}_NOT_SUB_{0} ... DONE".format(illname))
+print("CTR_STEP1-1.CREATE ILL.T120_NOT_{0}_NOT_SUB_{0} ... DONE".format(illname))
 print("STEP1-1:{:.6f}s, Total:{:.6f}s\n".format(step_end - step_start, step_end - total_start))
 
-print("CTR_STEP1-2.CREATE INDEX person ON T120_NOT_{0}_NOT_SUB_{0} ... START".format(illname))
+print("CTR_STEP1-2.CREATE INDEX person ON ILL.T120_NOT_{0}_NOT_SUB_{0} ... START".format(illname))
 step_start = time.clock()
-mycursor.execute("CREATE INDEX person ON T120_NOT_{0}_NOT_SUB_{0}(PERSON_ID)".format(illname))
+mycursor.execute("CREATE INDEX person ON ILL.T120_NOT_{0}_NOT_SUB_{0}(PERSON_ID)".format(illname))
 mydb.commit()
 step_end = time.clock()
-print("CTR_STEP1-2.CREATE INDEX person ON T120_NOT_{0}_NOT_SUB_{0} ... DONE".format(illname))
+print("CTR_STEP1-2.CREATE INDEX person ON ILL.T120_NOT_{0}_NOT_SUB_{0} ... DONE".format(illname))
 print("STEP1-2:{:.6f}s, Total:{:.6f}s\n".format(step_end - step_start, step_end - total_start))
 
-CTR_STEP2 = """CREATE TABLE T120_NOT_{0}_NOT_SUB_{0}_YEAR AS
+CTR_STEP2 = """CREATE TABLE ILL.T120_NOT_{0}_NOT_SUB_{0}_YEAR AS
 (
     SELECT
    	 T1.PERSON_ID, T1.MAX_YEAR, GROUP_CONCAT(DISTINCT(MAIN_SICK) SEPARATOR '/') AS MAIN_SICKS
     FROM
    	 (
     	SELECT PERSON_ID, MAX(YEAR(RECU_FR_DT)) AS MAX_YEAR
-   	 FROM T120_NOT_{0}_NOT_SUB_{0}
+   	 FROM ILL.T120_NOT_{0}_NOT_SUB_{0}
    	 GROUP BY PERSON_ID
    	 ) AS T1
-    RIGHT JOIN T120_NOT_{0}_NOT_SUB_{0} AS T2
+    RIGHT JOIN ILL.T120_NOT_{0}_NOT_SUB_{0} AS T2
    	 ON T1.PERSON_ID = T2.PERSON_ID
     WHERE T1.MAX_YEAR = YEAR(T2.RECU_FR_DT) AND T1.MAX_YEAR = 2013
 	GROUP BY T1.PERSON_ID
 )
 """.format(illname)
 
-print("CTR_STEP2-1.CREATE T120_NOT_{0}_NOT_SUB_{0}_YEAR ... START".format(illname))
+print("CTR_STEP2-1.CREATE ILL.T120_NOT_{0}_NOT_SUB_{0}_YEAR ... START".format(illname))
 step_start = time.clock()
 mycursor.execute(CTR_STEP2)
 mydb.commit()
 step_end = time.clock()
-print("CTR_STEP2-1.CREATE T120_NOT_{0}_NOT_SUB_{0}_YEAR ... DONE".format(illname))
+print("CTR_STEP2-1.CREATE ILL.T120_NOT_{0}_NOT_SUB_{0}_YEAR ... DONE".format(illname))
 print("STEP2-1:{:.6f}s, Total:{:.6f}s\n".format(step_end - step_start, step_end - total_start))
 
-print("CTR_STEP2-2.CREATE INDEX person ON T120_NOT_{0}_NOT_SUB_{0}_YEAR ... START".format(illname))
+print("CTR_STEP2-2.CREATE INDEX person ON ILL.T120_NOT_{0}_NOT_SUB_{0}_YEAR ... START".format(illname))
 step_start = time.clock()
-mycursor.execute("CREATE INDEX person ON T120_NOT_{0}_NOT_SUB_{0}_YEAR(PERSON_ID,MAX_YEAR)".format(illname))
+mycursor.execute("CREATE INDEX person ON ILL.T120_NOT_{0}_NOT_SUB_{0}_YEAR(PERSON_ID,MAX_YEAR)".format(illname))
 mydb.commit()
 step_end = time.clock()
-print("CTR_STEP2-2.CREATE INDEX person ON T120_NOT_{0}_NOT_SUB_{0}_YEAR ... DONE".format(illname))
+print("CTR_STEP2-2.CREATE INDEX person ON ILL.T120_NOT_{0}_NOT_SUB_{0}_YEAR ... DONE".format(illname))
 print("STEP2-2:{:.6f}s, Total:{:.6f}s\n".format(step_end - step_start, step_end - total_start))
 
-CTR_STEP3 = """CREATE TABLE T120_NOT_{0}_NOT_SUB_{0}_YEAR_JK AS (
+CTR_STEP3 = """CREATE TABLE ILL.T120_NOT_{0}_NOT_SUB_{0}_YEAR_JK AS (
 	SELECT
    	 T2.`PERSON_ID`,
    	 T2.`MAX_YEAR`,
@@ -385,27 +388,27 @@ CTR_STEP3 = """CREATE TABLE T120_NOT_{0}_NOT_SUB_{0}_YEAR_JK AS (
    	 T1.`CTRB_PT_TYPE_CD`,
    	 T1.`DFAB_GRD_CD`,
    	 T1.`DFAB_PTN_CD`
-	FROM JK_UNIF_AN1000 AS T1
-	LEFT JOIN T120_NOT_{0}_NOT_SUB_{0}_YEAR AS T2
+	FROM ILL.JK_UNIF AS T1
+	LEFT JOIN ILL.T120_NOT_{0}_NOT_SUB_{0}_YEAR AS T2
 	ON T1.PERSON_ID = T2.PERSON_ID
 	WHERE T1.STND_Y = T2.MAX_YEAR AND DTH_YM =""
 )
 """.format(illname)
 
-print("CTR_STEP3-1.CREATE T120_NOT_{0}_NOT_SUB_{0}_YEAR_JK ... START".format(illname))
+print("CTR_STEP3-1.CREATE ILL.T120_NOT_{0}_NOT_SUB_{0}_YEAR_JK ... START".format(illname))
 step_start = time.clock()
 mycursor.execute(CTR_STEP3)
 mydb.commit()
 step_end = time.clock()
-print("CTR_STEP3-1.CREATE T120_NOT_{0}_NOT_SUB_{0}_YEAR_JK ... DONE".format(illname))
+print("CTR_STEP3-1.CREATE ILL.T120_NOT_{0}_NOT_SUB_{0}_YEAR_JK ... DONE".format(illname))
 print("STEP3-1:{:.6f}s, Total:{:.6f}s\n".format(step_end - step_start, step_end - total_start))
 
-print("CTR_STEP3-2.CREATE INDEX person ON T120_NOT_{0}_NOT_SUB_{0}_YEAR_JK ... START".format(illname))
+print("CTR_STEP3-2.CREATE INDEX person ON ILL.T120_NOT_{0}_NOT_SUB_{0}_YEAR_JK ... START".format(illname))
 step_start = time.clock()
-mycursor.execute("CREATE INDEX person ON T120_NOT_{0}_NOT_SUB_{0}_YEAR_JK(PERSON_ID,MAX_YEAR)".format(illname))
+mycursor.execute("CREATE INDEX person ON ILL.T120_NOT_{0}_NOT_SUB_{0}_YEAR_JK(PERSON_ID,MAX_YEAR)".format(illname))
 mydb.commit()
 step_end = time.clock()
-print("CTR_STEP3-2.CREATE INDEX person ON T120_NOT_{0}_NOT_SUB_{0}_YEAR_JK ... DONE".format(illname))
+print("CTR_STEP3-2.CREATE INDEX person ON ILL.T120_NOT_{0}_NOT_SUB_{0}_YEAR_JK ... DONE".format(illname))
 print("STEP3-2:{:.6f}s, Total:{:.6f}s\n".format(step_end - step_start, step_end - total_start))
 
 CTR_STEP4 = """CREATE TABLE CTR_{0}_{1}_{2}YEAR
@@ -432,8 +435,8 @@ CTR_STEP4 = """CREATE TABLE CTR_{0}_{1}_{2}YEAR
 	T2.`FMLY_HPRTS_PATIEN_YN`,
 	T2.`FMLY_DIABML_PATIEN_YN`,
 	T2.`FMLY_CANCER_PATIEN_YN`
-FROM T120_NOT_{0}_NOT_SUB_{0}_YEAR_JK AS T1
-INNER JOIN GJ_UNIF_AN1000 AS T2
+FROM ILL.T120_NOT_{0}_NOT_SUB_{0}_YEAR_JK AS T1
+INNER JOIN ILL.GJ_UNIF AS T2
 ON T1.PERSON_ID = T2.PERSON_ID
 WHERE T1.MAX_YEAR = (T2.HCHK_YEAR + 0) AND
 	(T2.`HCHK_APOP_PMH_YN`  	IS NOT NULL AND NOT T2.`HCHK_APOP_PMH_YN`  	="") AND
@@ -489,7 +492,7 @@ for count in range(yearterm2):
         T2.`TM1_DRKQTY_RSPS_CD` AS `{3}Y_TM1_DRKQTY_RSPS_CD`,
         T2.`EXERCI_FREQ_RSPS_CD` AS `{3}Y_EXERCI_FREQ_RSPS_CD`
     FROM CTR_{0}_{1}_{2}YEAR AS T1
-    INNER JOIN GJ_UNIF_AN1000 AS T2
+    INNER JOIN ILL.GJ_UNIF AS T2
     ON T1.PERSON_ID = T2.PERSON_ID
     WHERE T1.`YEAR` = (T2.HCHK_YEAR + 2)    AND
         (T2.`HCHK_YEAR`         	IS NOT NULL AND NOT T2.`HCHK_YEAR`             	="") AND
@@ -536,52 +539,3 @@ for count in range(yearterm2):
 print("CREATE CTR DATA ... DONE")
 print("CTR:{:.6f}s, Total:{:.6f}s\n".format(step_end - ctr_start, step_end - total_start))
 
-print("CTR_{0}_{1}_{3}YEAR Export ... START".format(illname, yearterm, yearterm * (yearterm2-1),
-                                                                                   yearterm * (yearterm2)))
-step_start = time.clock()
-mycursor.execute("SET GLOBAL secure_file_priv = ''")
-mycursor.execute("""SELECT *
-FROM
-    T120_AN1000 
-INTO OUTFILE './DATA/cancelled_orders.csv' 
-FIELDS ENCLOSED BY '"' 
-TERMINATED BY ';' 
-ESCAPED BY '"' 
-LINES TERMINATED BY '\r\n'""")
-mycursor.execute("SELECT * FROM T120_AN1000".format(illname, yearterm, yearterm * (yearterm2-1),
-                                                                                   yearterm * (yearterm2)))
-result = mycursor.fetchall()
-fp = open('./DATA/CTR_{0}_{1}_{3}YEAR.csv'.format(illname, yearterm, yearterm * (yearterm2-1),
-                                                                                   yearterm * (yearterm2)), 'w')
-myFile = csv.writer(fp)
-myFile.writerows(result[0])
-myFile.writerows(result)
-fp.close()
-step_end = time.clock()
-print("CTR_{0}_{1}_{3}YEAR Export ... DONE".format(illname, yearterm, yearterm * (yearterm2-1),
-                                                                                   yearterm * (yearterm2)))
-print("CTR_{0}_{1}_{3}YEAR Export:{4:.6f}s, Total:{5:.6f}s\n".format(illname, yearterm, yearterm * (yearterm2-1),
-                                                                                   yearterm * (yearterm2), step_end - step_start, step_end - total_start))
-
-# tablename = input('table name: ')
-# csvname = input('csv name: ')
-# mycursor.execute("SELECT * FROM "+ tablename)
-# results = mycursor.fetchall()
-
-# csv export
-# if not mycursor.rowcount:
-#     print('Error #4')
-#     print('No Log on this date found')
-#     time.sleep(2)
-#     restart_program()
-# else:
-#     fp = open('C:/Users/LS-COM-00044/Desktop/파이썬/'+ csvname +'.csv', 'w')
-#     myFile = csv.writer(fp, lineterminator='\n')
-#     myFile.writerows(results)
-#     fp.close()
-#     print('csv exported')
-
-# extra option
-# step_start = time.clock()
-# mycursor.execute("UPDATE actor SET last_name='HE'")
-# mydb.commit()
