@@ -10,14 +10,14 @@ code for reading json data
 
 python-mysql connect and execute query through python
 * 0.1~
-mysql-connector
+** mysql-connector
 
 * 1.0~1.2
-mysql-connector
-rpy2
+** mysql-connector
+** rpy2
 
 * 2.0
-prototype
+** prototype
 
 gui.py
 ------
